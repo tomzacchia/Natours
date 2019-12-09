@@ -62,6 +62,40 @@ app.post('/api/v1/tours', (req, res) => {
   );
 });
 
+app.patch('/api/v1/tours/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  if (id > tours.length) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'invalid ID'
+    });
+  } else {
+    res.status(200).json({
+      status: 'success',
+      data: {
+        // Best practice is to send back the changed entity
+        tour: 'TOUR UPDATED'
+      }
+    });
+  }
+});
+
+app.delete('/api/v1/tours/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  if (id > tours.length) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'invalid ID'
+    });
+  } else {
+    // 204: Delete (no content)
+    res.status(204).json({
+      status: 'success',
+      data: null
+    });
+  }
+});
+
 const port = 3000;
 
 app.listen(port, () => {
