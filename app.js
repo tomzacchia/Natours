@@ -92,15 +92,22 @@ const deleteTour = (req, res) => {
   }
 };
 
-app.get('/api/v1/tours', getAllTours);
+// app.get('/api/v1/tours', getAllTours);
+// app.get('/api/v1/tours/:id', getTourByID);
+// app.post('/api/v1/tours', createTour);
+// app.patch('/api/v1/tours/:id', updateTour);
+// app.delete('/api/v1/tours/:id', deleteTour);
 
-app.get('/api/v1/tours/:id', getTourByID);
+app
+  .route('/api/v1/tours')
+  .get(getAllTours)
+  .post(createTour);
 
-app.post('/api/v1/tours', createTour);
-
-app.patch('/api/v1/tours/:id', updateTour);
-
-app.delete('/api/v1/tours/:id', deleteTour);
+app
+  .route('/api/v1/tours/:id')
+  .get(getTourByID)
+  .patch(updateTour)
+  .delete(deleteTour);
 
 const port = 3000;
 
