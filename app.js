@@ -1,10 +1,22 @@
 const fs = require('fs');
 const express = require('express');
+const morgan = require('morgan');
 
 const app = express();
 
+// use of 3rd party middelware for logging
+app.use(morgan('dev'));
+
 // include .json() middleware, add data to body of req
 app.use(express.json());
+
+// .use accepts a middleware function
+// we can use middleware to add extra properties to req, i.e DATETIME
+app.use((req, res, next) => {
+  console.log('Hello from the middleware');
+
+  next();
+});
 
 // Caching data via blocking code
 const tours = JSON.parse(
@@ -12,7 +24,6 @@ const tours = JSON.parse(
 );
 
 const getAllTours = (req, res) => {
-  // formatting data according to JSEND specs
   res.status(200).json({
     status: 'success',
     results: tours.length,
@@ -92,12 +103,6 @@ const deleteTour = (req, res) => {
   }
 };
 
-// app.get('/api/v1/tours', getAllTours);
-// app.get('/api/v1/tours/:id', getTourByID);
-// app.post('/api/v1/tours', createTour);
-// app.patch('/api/v1/tours/:id', updateTour);
-// app.delete('/api/v1/tours/:id', deleteTour);
-
 app
   .route('/api/v1/tours')
   .get(getAllTours)
@@ -110,7 +115,6 @@ app
   .delete(deleteTour);
 
 const port = 3000;
-
 app.listen(port, () => {
   console.log(`App running on port: ${port}`);
 });
