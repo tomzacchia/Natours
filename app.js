@@ -20,6 +20,7 @@ app.use((req, res, next) => {
 });
 
 // creating 'subapp' for tours resource, Mounting routers
+// these two routers are middleware, therefore we can use app.use
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 
