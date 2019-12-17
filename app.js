@@ -7,10 +7,15 @@ const userRouter = require(`./routes/userRoutes`);
 const app = express();
 
 // use of 3rd party middelware for logging
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 // include .json() middleware, add data to body of req
 app.use(express.json());
+
+// for static files, sets public as root
+app.use(express.static(`${__dirname}/public`));
 
 // .use accepts a middleware function
 // we can use middleware to add extra properties to req, i.e DATETIME
