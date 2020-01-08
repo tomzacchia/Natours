@@ -1,22 +1,4 @@
-const fs = require('fs');
-
-// Caching data via blocking code
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
-);
-
-exports.checkID = (req, res, next, val) => {
-  // val = value of parameter (in this case id)
-  console.log(`inside id middleware param`);
-  if (val > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'invalid ID'
-    });
-  }
-
-  next();
-};
+const Tour = require('./../model/tourModel');
 
 // middleware to check if body contains name and price property
 exports.checkBody = (req, res, next) => {
@@ -32,31 +14,37 @@ exports.checkBody = (req, res, next) => {
 
 exports.getAllTours = (req, res) => {
   res.status(200).json({
-    status: 'success',
-    results: tours.length,
-    data: {
-      tours
-    }
+    status: 'success'
+    // results: tours.length,
+    // data: {
+    //   tours
+    // }
   });
 };
 
 exports.getTourByID = (req, res) => {
-  const id = parseInt(req.params.id);
-  const tour = tours[id];
+  // const id = parseInt(req.params.id);
+  // const tour = tours[id];
 
-  if (!tour) {
-    res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID'
-    });
-  } else {
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tour
-      }
-    });
-  }
+  // if (!tour) {
+  //   res.status(404).json({
+  //     status: 'fail',
+  //     message: 'Invalid ID'
+  //   });
+  // } else {
+  //   res.status(200).json({
+  //     status: 'success',
+  //     data: {
+  //       tour
+  //     }
+  //   });
+  // }
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tour: 'TOUR FOUND'
+    }
+  });
 };
 
 exports.updateTour = (req, res) => {
@@ -69,25 +57,12 @@ exports.updateTour = (req, res) => {
 };
 
 exports.createTour = (req, res) => {
-  const newId = tours[tours.length - 1].id + 1;
-  const newTour = { ...req.body, id: newId };
-
-  tours.push(newTour);
-  fs.writeFile(
-    `${__dirname}/dev-data/data/tours-simple.json`,
-    JSON.stringify(tours),
-    err => {
-      res.status(201).json({
-        status: 'success',
-        data: {
-          tour: newTour
-        }
-      });
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tour: 'TOUR CREATED'
     }
-  );
-  // res.status(201).json({
-  //   status: 'success'
-  // });
+  });
 };
 
 exports.deleteTour = (req, res) => {
