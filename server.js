@@ -19,14 +19,9 @@ mongoose
     console.log('DB connection successfull');
   });
 
-// Mongoose models allow us to perform CRUD operations on documents
-// Mongoose models are made out of schemas
-// Mongoose uses native node data types
 const tourSchema = new mongoose.Schema({
-  // we can also specify Schema Type Options for any field
   name: {
     type: String,
-    // [boolean, error message]
     required: [true, 'A tour must have a name'],
     unique: true
   },
@@ -40,8 +35,20 @@ const tourSchema = new mongoose.Schema({
   }
 });
 
-// Creating Tour model
 const Tour = mongoose.model('Tour', tourSchema);
+
+const testTour = new Tour({
+  name: 'The Park Camper',
+  rating: 4.7,
+  price: 997
+});
+
+// When we save a document for the first time,
+// Mongoose will create a collection for our model
+testTour
+  .save()
+  .then(doc => console.log(doc))
+  .catch(err => console.log(err));
 
 // read config file before loading code from app
 
