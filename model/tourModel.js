@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// NOTE: SCHEMA rejects all values not part of the data structure of the model
 const tourSchema = new mongoose.Schema({
   name: {
     type: String,
