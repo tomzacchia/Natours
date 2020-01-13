@@ -52,7 +52,9 @@ const tourSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     // immediately converted into date format
-    default: Date.now()
+    default: Date.now(),
+    // hide this field from queries
+    select: false
   },
   startDates: [Date]
 });
