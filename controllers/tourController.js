@@ -1,5 +1,12 @@
 const Tour = require('./../model/tourModel');
 
+exports.aliasTopTours = async (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
+};
+
 exports.getAllTours = async (req, res) => {
   try {
     // BUILD QUERY
@@ -20,6 +27,7 @@ exports.getAllTours = async (req, res) => {
     let query = Tour.find(JSON.parse(queryString));
 
     // 3) SORTING
+    // sort=-price,-name
     if (req.query.sort) {
       const sortBy = req.query.sort.split(',').join(' ');
       query = query.sort(sortBy);
@@ -28,12 +36,27 @@ exports.getAllTours = async (req, res) => {
     }
 
     // 4) Field Limiting
+    // fields=name,duration,difficulty,price
     if (req.query.fields) {
       const fields = req.query.fields.split(',').join(' ');
       query = query.select(fields);
     } else {
       // - FIELD_NAME, everything but fieldname
       query = query.select('-__v');
+    }
+
+    // 5) PAGINATION
+    // page=1&limit=5
+    const page = req.query.page * 1 || 1; // Str to num
+    const limit = req.query.limit * 1 || 10;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const totalTours = await Tour.countDocuments();
+
+      if (skip >= totalTours) throw new Error('Page D.N.E');
     }
 
     // EXECUTE QUERY
