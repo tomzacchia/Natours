@@ -11,7 +11,6 @@ exports.aliasTopTours = async (req, res, next) => {
 
 exports.getAllTours = async (req, res) => {
   try {
-    // BUILD QUERY
     const features = new APIFeatures(Tour.find(), req.query)
       .filter()
       .sort()
@@ -101,6 +100,50 @@ exports.deleteTour = async (req, res) => {
     res.status(204).json({
       status: 'success',
       data: null
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err
+    });
+  }
+};
+
+exports.getTourStats = async (req, res) => {
+  try {
+    // Aggregate pipeline is a mongo feature
+    // we pass in an array of stages
+    const stats = await Tour.aggregate([
+      {
+        $match: { ratingsAverage: { $gte: 4.5 } }
+      {
+        $group: {
+          _id: '$difficulty',
+          // $avg is a mongo operatpor, here we specify avg of ratingsAverage
+          // for each document that goes through pipeline, sum 1
+          numTours: { $sum: 1 },
+          numRatings: { $sum: '$ratingsQuantity' },
+          averageRating: { $avg: '$ratingsAverage' },
+          averagePrice: { $avg: '$price' },
+          minPrice: { $min: '$price' },
+          maxPrice: { $max: '$price' }
+        }
+      },
+      {
+        // 1: asc sorting
+        $sort: { averagePrice: 1 }
+      }
+      // {
+      //   // remove tours rated as not easy, multi stage aggregate
+      //   $match: { _id: { $ne: 'easy' } }
+      // }
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        stats
+      }
     });
   } catch (err) {
     res.status(400).json({
