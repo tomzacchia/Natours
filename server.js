@@ -1,9 +1,23 @@
+const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 // read config variables, process is then available app wide
 // process module is available globally
 dotenv.config({ path: './config.env' });
 
-// read config file before loading code from app
+const DB = process.env.DATABASE.replace(
+  '<PASSWORD>',
+  process.env.DATABASE_PASSWORD
+);
+
+mongoose
+  .connect(DB, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false
+  })
+  .then(() => {
+    console.log('DB connection successfull');
+  });
 
 const app = require('./app');
 
