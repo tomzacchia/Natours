@@ -3,7 +3,7 @@ const express = require('express');
 const morgan = require('morgan');
 
 const AppError = require('./utils/appError');
-const globalErrorHandler = require('./controllers/errors');
+const globalErrorHandler = require('./controllers/errorController');
 
 const tourRouter = require(`./routes/tourRoutes`);
 const userRouter = require(`./routes/userRoutes`);
@@ -36,7 +36,7 @@ app.all('*', (req, res, next) => {
 });
 
 // ERROR HANDLING MIDDLEWARE
-// by specifying 4 arguments, express knows for error handling
+// by specifying 4 arguments, express knows this middleware is for error handling
 app.use(globalErrorHandler);
 
 module.exports = app;
