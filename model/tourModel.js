@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const validator = require('validator');
+// const validator = require('validator');
 
 // NOTE: SCHEMA rejects all values not part of the data structure of the model
 const tourSchema = new mongoose.Schema(
@@ -11,8 +11,8 @@ const tourSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       maxlength: [40, 'A tour name must have less or equal than 40 chars'],
-      minlength: [10, 'A tour name must have more or equal than 10 chars'],
-      validate: [validator.isAlpha, 'Tour name must only contain chars']
+      minlength: [10, 'A tour name must have more or equal than 10 chars']
+      // validate: [validator.isAlpha, 'Tour name must only contain chars']
     },
     duration: {
       type: Number,
@@ -27,7 +27,7 @@ const tourSchema = new mongoose.Schema(
       required: [true, 'A tour must have a difficulty'],
       enum: {
         values: ['easy', 'medium', 'difficult'],
-        message: 'difficult is either: easy, medium or difficult'
+        message: 'Difficult is either: easy, medium or difficult'
       }
     },
     ratingsAverage: {
