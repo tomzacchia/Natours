@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const validator = require('validator');
+// const validator = require('validator');
 
 // NOTE: SCHEMA rejects all values not part of the data structure of the model
 const tourSchema = new mongoose.Schema(
