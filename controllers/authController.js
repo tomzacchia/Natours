@@ -38,6 +38,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // 2) Check if user exists && password is correct
+  // In the userSchema we specify that password is to not be selected
   const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.comparePassword(password, user.password))) {
@@ -53,4 +54,31 @@ exports.login = catchAsync(async (req, res, next) => {
     status: 'success',
     token
   });
+});
+
+exports.protect = catchAsync(async (req, res, next) => {
+  let token;
+  // 1) Check if token is valid
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+    console.log(token);
+  }
+
+  if (!token) {
+    const err = new AppError(
+      'You are not authorized to access this resource',
+      401
+    );
+    return next(err);
+  }
+
+  // 2) Verify token authenticity
+
+  // 3) Check if user still exists
+
+  // 4) Check if password changed after JWT was issued
+  next();
 });
