@@ -1,4 +1,3 @@
-const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('../model/userModel');
 const catchAsync = require('../utils/catchAsync');
@@ -12,11 +11,12 @@ const signToken = id => {
 
 exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
-    passwordChangedAt: req.body.passwordChangedAt
+    // name: req.body.name,
+    // email: req.body.email,
+    // password: req.body.password,
+    // passwordConfirm: req.body.passwordConfirm,
+    // passwordChangedAt: req.body.passwordChangedAt
+    ...req.body
   });
 
   const token = signToken(newUser._id);
@@ -90,5 +90,19 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // GRANT ACCESS TO ROUTE
+  req.user = user;
   next();
 });
+
+exports.restrictTo = (...roles) => {
+  // We can't pass arguments in a middleware funciton, therefore a workaround
+  // is to have a wrapper function that returns the middleware function
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      // 403: Forbidden
+      return next(new AppError('Permission denied', 403));
+    }
+
+    next();
+  };
+};
