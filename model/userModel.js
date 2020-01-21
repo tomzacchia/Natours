@@ -37,7 +37,8 @@ const userSchema = new mongoose.Schema({
       },
       message: 'Passwords must match'
     }
-  }
+  },
+  passwordChangedAt: Date
 });
 
 // pre-save (document) middleware. event comes after validation
@@ -58,6 +59,19 @@ userSchema.methods.comparePassword = async function(
 ) {
   // userPW = PW in DB. this.password === null since pw has option select: false
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.changedPasswordDate = function(JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    console.log(changedTimestamp, JWTTimestamp);
+    // RETURN TRUE if JWT issued prior to password change
+    return JWTTimestamp < changedTimestamp;
+  }
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);

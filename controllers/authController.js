@@ -15,7 +15,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm
+    passwordConfirm: req.body.passwordConfirm,
+    passwordChangedAt: req.body.passwordChangedAt
   });
 
   const token = signToken(newUser._id);
@@ -77,10 +78,17 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // 2) Verify token authenticity
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  console.log(decoded);
 
   // 3) Check if user still exists
+  const user = await User.findById(decoded.id);
+
+  if (!user) return next(new AppError('This user no longer exists.', 401));
 
   // 4) Check if password changed after JWT was issued
+  if (user.changedPasswordDate(decoded.iat)) {
+    return next(new AppError('Token is expired', 401));
+  }
+
+  // GRANT ACCESS TO ROUTE
   next();
 });
