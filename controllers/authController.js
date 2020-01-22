@@ -1,3 +1,4 @@
+const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('../model/userModel');
 const catchAsync = require('../utils/catchAsync');
@@ -77,7 +78,8 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // 2) Verify token authenticity
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  // Decryption takes time, therefore we do not block the event loop
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
   // 3) Check if user still exists
   const user = await User.findById(decoded.id);
@@ -106,3 +108,21 @@ exports.restrictTo = (...roles) => {
     next();
   };
 };
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // 1) Get user based on email
+  const user = await User.findOne({ emai: req.body.email });
+  if (!user) {
+    return next(new AppError('There is no user with that email address', 404));
+  }
+
+  // 2) Generate random token
+  const resetToken = user.createPasswordResetToken();
+  // the current instance of the user document has passwordResetExpire which needs to be saved
+  // however in the schema we specified that email and password were required
+  await user.save({ validateBeforeSave: false });
+
+  // 3) Send it to user's email
+});
+
+exports.resetPassword = (req, res, next) => {};
