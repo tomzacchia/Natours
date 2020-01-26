@@ -41,10 +41,12 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // 2) Check if user exists && password is correct
-  // In the userSchema we specify that password is to not be selected
+  // In the userSchema we specified password : {select:false}
   const user = await User.findOne({ email }).select('+password');
+  const isPasswordValid = await user.comparePassword(password, user.password);
+  const invalidUser = !user || !isPasswordValid;
 
-  if (!user || !(await user.comparePassword(password, user.password))) {
+  if (invalidUser) {
     // 401: UNAUTHORIZED
     const err = new AppError('Incorrect email or password', 401);
     return next(err);
@@ -61,7 +63,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
-  // 1) Check if token is valid
+  // 1) Check if token is present in headers
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
@@ -118,8 +120,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 2) Generate random token
   const resetToken = user.createPasswordResetToken();
-  // the current instance of the user document has passwordResetExpire which needs to be saved
-  // however in the schema we specified that email and password were required
+  // We specified that email and password are required fields
+  // therefore to save passwordResetExpire we need to disable validateBeforeSave
   await user.save({ validateBeforeSave: false });
 
   // 3) Send it to user's email
