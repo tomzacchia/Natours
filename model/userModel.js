@@ -60,6 +60,17 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
+userSchema.pre('save', async function(next) {
+  const timetampDeltaMilisecs = 2000;
+  if (!this.isModified.password || this.isNew) return next();
+
+  // there exists rare cases where the token is
+  // issued before passwordChangedAt is modified
+  this.passwordChangedAt = Date.now() - timetampDeltaMilisecs;
+
+  next();
+});
+
 // Instance method
 userSchema.methods.comparePassword = async function(
   candidatePassword,
