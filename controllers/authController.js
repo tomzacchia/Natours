@@ -12,6 +12,18 @@ const signToken = id => {
   });
 };
 
+const createAndSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+
+  res.status(statusCode).json({
+    status: 'success',
+    data: {
+      user,
+      token
+    }
+  });
+};
+
 exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     // name: req.body.name,
@@ -63,16 +75,22 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.protect = catchAsync(async (req, res, next) => {
-  let token;
-  // 1) Check if token is present in headers
+const extractBearerToken = req => {
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
     const tokenPosition = 1;
-    token = req.headers.authorization.split(' ')[tokenPosition];
+    const token = req.headers.authorization.split(' ')[tokenPosition];
+    return token;
   }
+
+  return undefined;
+};
+
+exports.protect = catchAsync(async (req, res, next) => {
+  // 1) Check if token is present in headers
+  const token = extractBearerToken(req);
 
   if (!token) {
     const err = new AppError(
@@ -195,3 +213,30 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     }
   });
 });
+
+exports.updateLoggedInUserPassword = async (req, res, next) => {
+  const { unhashedPassword, newPassword, newPasswordConfirm } = req.body;
+
+  // 1) Get user from collection
+  const { _id } = req.user;
+  const user = await User.findById(_id).select('+password');
+
+  const currentPasswordDB = user.password;
+
+  // 2) Verify current password
+  const isPasswordValid = await user.comparePassword(
+    unhashedPassword,
+    currentPasswordDB
+  );
+
+  if (!isPasswordValid) return next(new AppError('Password is invalid'), 400);
+
+  // 3) update current password with new password
+  user.password = newPassword;
+  user.passwordConfirm = newPasswordConfirm;
+  // see userSchema as to why we don't use findByIDandUpdate
+  await user.save();
+
+  // 4) Log user in, send JWT
+  createAndSendToken(user, 200, res);
+};
