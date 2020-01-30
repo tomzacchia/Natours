@@ -54,15 +54,6 @@ exports.signup = catchAsync(async (req, res, next) => {
   });
 
   createAndSendToken(newUser, 201, res);
-  // const token = signToken(newUser._id);
-
-  // res.status(201).json({
-  //   status: 'success',
-  //   data: {
-  //     user: newUser,
-  //     token
-  //   }
-  // });
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -87,12 +78,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // 3) If everything is ok, issue JWT token
-  const token = signToken(user._id);
-
-  res.status(200).json({
-    status: 'success',
-    token
-  });
+  createAndSendToken(user, 200, res);
 });
 
 const extractBearerToken = req => {
@@ -224,14 +210,15 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   // 3) updated passwordChangedAt property
   // 4) Log the user in, send JWT
-  const token = signToken(user._id);
+  createAndSendToken(user, 201, res);
+  // const token = signToken(user._id);
 
-  res.status(201).json({
-    status: 'success',
-    data: {
-      token
-    }
-  });
+  // res.status(201).json({
+  //   status: 'success',
+  //   data: {
+  //     token
+  //   }
+  // });
 });
 
 exports.updateLoggedInUserPassword = async (req, res, next) => {
