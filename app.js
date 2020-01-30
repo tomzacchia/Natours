@@ -2,6 +2,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -11,14 +12,11 @@ const userRouter = require(`./routes/userRoutes`);
 
 const app = express();
 
-// use of 3rd party middelware for logging
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
+// SET SECURITY HTTP HEADERS
+// helmet() returns a function
+app.use(helmet());
 
-app.use(express.json());
-app.use(express.static(`${__dirname}/public`));
-
+// LIMIT # REQUESTS PER IP
 const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 100,
@@ -27,11 +25,17 @@ const limiter = rateLimit({
 
 app.use('/api', limiter);
 
-app.use((req, res, next) => {
-  // console.log(req.headers);
+// BODY PARSER - INSERT BODY INTO REQ.BODY
+app.use(express.json({ limit: '10kb' }));
 
-  next();
-});
+// SERVING STATIC FILES
+app.use(express.static(`${__dirname}/public`));
+
+// use of 3rd party middelware for logging
+// DEV LOGGING
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 // creating 'subapp' for tours resource, Mounting routers
 // these two routers are middleware, therefore we can use app.use
