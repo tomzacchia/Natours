@@ -1,6 +1,10 @@
 // everything pertaining to app config goes here
 const express = require('express');
 const morgan = require('morgan');
+
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/errorController');
+
 const tourRouter = require(`./routes/tourRoutes`);
 const userRouter = require(`./routes/userRoutes`);
 
@@ -11,16 +15,11 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// include .json() middleware, add data to body of req
 app.use(express.json());
-
-// for static files, sets public as root
 app.use(express.static(`${__dirname}/public`));
 
-// .use accepts a middleware function
-// we can use middleware to add extra properties to req, i.e DATETIME
 app.use((req, res, next) => {
-  console.log('Hello from the middleware');
+  // console.log(req.headers);
 
   next();
 });
@@ -29,5 +28,21 @@ app.use((req, res, next) => {
 // these two routers are middleware, therefore we can use app.use
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+
+// catch-all middleware runs after no routes match
+app.all('*', (req, res, next) => {
+  // string will be err.message
+  // const err = new Error(`Can't find ${req.originalUrl}`);
+  // err.status = 'fail';
+  // err.statusCode = 404;
+
+  // If we pass variable into next, all middlewares are skipped
+  // and the next middleware is the error handling middleware
+  next(new AppError(`Can't find ${req.originalUrl}`, 404));
+});
+
+// ERROR HANDLING MIDDLEWARE
+// by specifying 4 arguments, express knows this middleware is for error handling
+app.use(globalErrorHandler);
 
 module.exports = app;
