@@ -50,6 +50,12 @@ const handleValidationErrorDB = err => {
   return new AppError(message, 400);
 };
 
+const handleJWTError = () =>
+  new AppError('Invalid token. Please login again', 401);
+
+const handleJWTExpired = () =>
+  new AppError('Token has epxired. Please login again', 401);
+
 module.exports = (err, req, res, next) => {
   // 500: internal server error
   err.statusCode = err.statusCode || 500;
@@ -66,6 +72,10 @@ module.exports = (err, req, res, next) => {
       updatedError = handleDuplicateFieldDB({ ...err });
     } else if (err.name === 'ValidationError') {
       updatedError = handleValidationErrorDB({ ...err });
+    } else if (err.name === 'JsonWebTokenError') {
+      updatedError = handleJWTError({ ...err });
+    } else if (err.name === 'TokenExpiredError') {
+      updatedError = handleJWTExpired({ ...err });
     }
 
     sendErrorProd(updatedError, res);

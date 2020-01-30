@@ -18,6 +18,12 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.json());
 app.use(express.static(`${__dirname}/public`));
 
+app.use((req, res, next) => {
+  // console.log(req.headers);
+
+  next();
+});
+
 // creating 'subapp' for tours resource, Mounting routers
 // these two routers are middleware, therefore we can use app.use
 app.use('/api/v1/tours', tourRouter);
